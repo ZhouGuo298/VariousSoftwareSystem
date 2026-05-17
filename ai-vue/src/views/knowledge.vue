@@ -2,7 +2,7 @@
     <div>
         <PageHead pageTitle="知识文章">
             <template #buttons>
-                <el-button type="primary">新增</el-button>
+                <el-button type="primary" @click="dialogVisible = true">新增</el-button>
                 <el-button type="primary">编辑</el-button>
             </template>
         </PageHead>
@@ -40,6 +40,7 @@
             :page-size="pagination.size"
             @change="handleChange"
         />
+        <ArticleDialog v-model:modelValue="dialogVisible" :categories="categories" ></ArticleDialog>
        </div>
 </template>
 
@@ -48,6 +49,7 @@ import PageHead from '@/components/PageHead.vue'
 import Tabelserch from '@/components/Tabelserch.vue'
 import { categoryTree, articleList } from '@/api/admin'
 import { onMounted, reactive, ref } from 'vue'
+import ArticleDialog from '@/components/ArticleDialog.vue'
 
 // 生命周期钩子
 // onMounted(() => {
@@ -68,7 +70,11 @@ const categoryMap = reactive({})
 const categories = ref([])
 // 表格数据
 const tableData = ref([])
+// 弹窗状态
+const dialogVisible = ref(false)
 
+
+// 表单数据
 const formItem = [
     {
         comp: 'input',
