@@ -4,8 +4,6 @@
             default-active="1"
             :collapse="isAdmin"
             :collapse-transition="false"
-            @open="handleOpen"
-            @close="handleClose"
             class="menu-style"
         >
             <div class="brand">

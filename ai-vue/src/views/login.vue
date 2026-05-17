@@ -27,6 +27,9 @@
                         <el-button type="primary" @click="submitForm(ruleFormRef)" class="login-btn">登录</el-button>
                     </el-form-item>
                 </el-form>
+                <div class="footer">
+                    <span>还没有账号？ <router-link to="/register">去注册</router-link></span>
+                </div>
             </div>
          </div>
        </div>
@@ -35,6 +38,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import { login } from '@/api/admin'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const formData = ref({
     username: '',
@@ -58,7 +65,26 @@ const submitForm = async (formEL) => {
     }
     await formEL.validate((valid,fields) => {   
         if(valid) {
-            console.log(fields)
+            console.log('表单数据:', formData.value)
+            login(formData.value).then(res => {
+                let loginData = null
+                if (res && res.data) {
+                    loginData = res.data
+                } else if (res && res.token) {
+                    loginData = res
+                } else if (res && res.code === 200 && res.data) {
+                    loginData = res.data
+                }
+                localStorage.setItem('token', loginData.token)
+                localStorage.setItem('userInfo', JSON.stringify(loginData.userInfo || {}))
+
+                if(loginData.userInfo.userType === 2){
+                    router.push('/user/dashboard')
+                } else{}
+
+            }).catch(err => {
+                console.error('登录错误:', err)
+            })
         }
     })
 }
@@ -83,13 +109,16 @@ const submitForm = async (formEL) => {
             }
        }
        .form-container {
-            margin-top: 40px;
+            margin-top: 30px;
        }
        .login-btn {
             margin-top: 20px;
             width: 100%;
        }
-       
+       .footer {
+            margin-top: 20px;
+            text-align: center;
+       }
     }
 }
 </style>
