@@ -21,5 +21,12 @@ export function uploadFile(file,businessInfo) {
     formData.append('businessField','cover')
 
     return service.post('/file/upload', formData,{headers:{'Content-Type':'multipart/form-data'}})
+}
 
+export function addArticle(data) {
+    return service.post('/knowledge/article', data)
+}
+
+export function getArticleDetail(id) {
+    return service.get(`/knowledge/article/${id}`)
 }

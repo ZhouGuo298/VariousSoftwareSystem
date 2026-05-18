@@ -23,10 +23,10 @@
             </el-table-column>
             <el-table-column prop="authorName" label="作者" width="150"></el-table-column>
             <el-table-column prop="readCount" label="阅读量" width="150"></el-table-column>
-            <el-table-column prop="publishedAt" label="发布时间" width="150"></el-table-column>
+            <el-table-column prop="updatedAt" label="发布时间" width="150"></el-table-column>
             <el-table-column label="操作" width="250" fixed="right">
                 <template #default="scope">
-                   <el-button text type="primary">编辑</el-button>
+                   <el-button text type="primary" @click="handleEdit(scope.row)">编辑</el-button>
                    <el-button v-if="scope.row.status === 0 || scope.row.status === 2" text type="success">发布</el-button>
                    <el-button v-if="scope.row.status === 1" text type="warning">下线</el-button>
                    <el-button  text type="danger">删除</el-button>
@@ -40,14 +40,14 @@
             :page-size="pagination.size"
             @change="handleChange"
         />
-        <ArticleDialog v-model:modelValue="dialogVisible" :categories="categories" ></ArticleDialog>
+        <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle"  :categories="categories" @submit="handleSubmit"></ArticleDialog>
        </div>
 </template>
 
 <script setup>
 import PageHead from '@/components/PageHead.vue'
 import Tabelserch from '@/components/Tabelserch.vue'
-import { categoryTree, articleList } from '@/api/admin'
+import { categoryTree, articleList, getArticleDetail } from '@/api/admin'
 import { onMounted, reactive, ref } from 'vue'
 import ArticleDialog from '@/components/ArticleDialog.vue'
 
@@ -170,6 +170,23 @@ onMounted(async () => {
     // 初始化查询
     handleSearch()
 })
+
+// 提交表单
+const handleSubmit = () => {
+
+}
+
+const currentArticle = ref(null)
+// 编辑文章
+const handleEdit = (row) => {
+    if(!row.id){
+        return
+    }
+    getArticleDetail(row.id).then(res => {
+        currentArticle.value = res
+        dialogVisible.value = true
+    })
+}
 </script>
 
 

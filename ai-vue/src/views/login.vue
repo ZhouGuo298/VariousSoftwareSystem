@@ -67,20 +67,34 @@ const submitForm = async (formEL) => {
         if(valid) {
             console.log('表单数据:', formData.value)
             login(formData.value).then(res => {
-                let loginData = null
-                if (res && res.data) {
-                    loginData = res.data
-                } else if (res && res.token) {
-                    loginData = res
-                } else if (res && res.code === 200 && res.data) {
-                    loginData = res.data
+                console.log('登录响应:', res)
+                let token = null
+                let userInfo = null
+                
+                if (res && (res.code === 200 || res.code === '200')) {
+                    if (res.data && res.data.token) {
+                        token = res.data.token
+                        userInfo = res.data.userInfo || res.data
+                    } else if (res.token) {
+                        token = res.token
+                        userInfo = res.userInfo || res
+                    }
                 }
-                localStorage.setItem('token', loginData.token)
-                localStorage.setItem('userInfo', JSON.stringify(loginData.userInfo || {}))
+                
+                if(token) {
+                    localStorage.setItem('token', token)
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo || {}))
+                    console.log('保存 token 成功:', token)
+                    console.log('保存 userInfo 成功:', userInfo)
 
-                if(loginData.userInfo.userType === 2){
-                    router.push('/user/dashboard')
-                } else{}
+                    if(userInfo && (userInfo.userType === 2 || userInfo.roleType === 2 || userInfo.roleType === '2')){
+                        router.push('/user/dashboard')
+                    } else {
+                        router.push('/')
+                    }
+                } else {
+                    console.error('未获取到 token，登录响应:', res)
+                }
 
             }).catch(err => {
                 console.error('登录错误:', err)

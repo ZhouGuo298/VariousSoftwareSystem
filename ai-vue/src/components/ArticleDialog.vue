@@ -1,7 +1,6 @@
 <template>
-    <div>
       <el-dialog
-        title="文章详情"
+        :title="isEdit ? '编辑文章' : '添加文章'"
         v-model="dialogVisible"
         width="50%"
         @close="handleClose"
@@ -30,6 +29,7 @@
                     action="#"
                     :before-upload="beforeUpload"
                     :http-request="handleUpload"
+                    :show-file-list="false"
                     accept="image/*"
                 >
                     <div v-if="!imgUrl" class="cover-placeholder">
@@ -37,18 +37,41 @@
                     </div>
                     <img v-else :src="imgUrl" alt="封面图片" class="cover-image" />
                 </el-upload>
+                <div v-if="imgUrl" class="cover-remove">
+                  <el-button type="danger" size="mini" @click="removeCover">删除</el-button>
+                </div>  
+
             </div>
           </el-form-item>
+          <el-form-item label="文章内容" prop="content">
+            <RichTextEditor 
+            v-model="formData.content"
+            :maxCharCount="5000"
+            @change="handleContentChange"
+            @create="handleCreated"
+            min-height="400px"
+            ></RichTextEditor>
+          </el-form-item>
         </el-form>
+          <div v-if="BtnPreview">
+            <h3>内容预览</h3>
+            <div v-html="formData.content"></div>
+          </div>
+          <template #footer>
+            <el-button @click="BtnPreview = !BtnPreview">{{BtnPreview ? '关闭预览' : '预览'}}</el-button>
+            <el-button @click="handleClose">取消</el-button>
+            <el-button type="primary" @click="handleSubmit" :loading="loading">{{isEdit ? '新增' : '更新'}}</el-button>
+          </template>
       </el-dialog>
-    </div>
 </template>
 
 <script setup>
-import { ref, computed,reactive } from 'vue'
+import { ref, computed,reactive,nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { uploadFile } from '@/api/admin'
 import { filebaseURL } from '@/config/index'
+import RichTextEditor from '@/components/RichTextEditor.vue'
+import { addArticle } from '@/api/admin'
 
 const props = defineProps({
   modelValue: {
@@ -58,12 +81,14 @@ const props = defineProps({
   categories: {
     type: Array,
     default: () => []
-  }
+  },
+  article: {
+    type: Object,
+    default: null
+   }
 })
 
-
-
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue','submit'])
 
 const dialogVisible = computed({
   get(){
@@ -76,7 +101,7 @@ const dialogVisible = computed({
 
 // 弹窗关闭时触发
 const handleClose = () => {
-
+  
 }
 
 const formData = reactive({
@@ -86,8 +111,10 @@ const formData = reactive({
     categoryId: 1,
     summary: '',
     tags: '',
-    id: ''
+    id: '',
+    tagArray: []
 })
+
 
 const rules = reactive({
     title: [
@@ -97,7 +124,11 @@ const rules = reactive({
     categoryId: [
         { required: true, message: '请选择文章分类', trigger: 'change' }
     ],
-})
+    content: [
+        { required: true, message: '请输入文章内容', trigger: 'change' }
+        ,{ max: 5000, message: '文章内容最多5000个字符', trigger: 'blur' }
+    ],
+ })
 
 const commonTags = [
     '情绪管理','焦虑','抑郁','压力','睡眠',
@@ -131,8 +162,52 @@ const handleUpload = async ({file}) => {
   formData.coverImg = filePath
 }
 
+const removeCover = () => {
+  imgUrl.value = ''
+  formData.coverImg = ''
+}
 
+const handleContentChange = (html) => {
+  formData.content = html
+}
 
+const editorInstance = ref(null)
+
+const handleCreated = (editor) => {
+  editorInstance.value = editor
+  if(formData.content && editor){
+    nextTick(() => {
+      editor.setHtml(formData.content)
+    })
+  }
+}
+
+const BtnPreview = ref(false)
+
+const loading = ref(false)
+const formRef = ref()
+
+const handleSubmit = () => {
+  formRef.value.validate((valid,fields) => {
+    if (valid) {
+      loading.value = true
+      dialogVisible.value = false
+    }
+    // 对象解构赋值，将formData中的属性赋值给submitData，同时将tags转换为数组格式
+    const submitData = {
+      ...formData,
+      tags: formData.tagArray.join(','),
+    }
+
+    delete submitData.tagArray
+    
+    addArticle(submitData).then(res => {
+    loading.value = false
+    emit('success')
+    })
+  })
+}
+const isEdit = computed(() => !!props.article?.id)
 </script>
 
 <style lang="scss" scoped>

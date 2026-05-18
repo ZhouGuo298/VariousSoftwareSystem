@@ -1,5 +1,5 @@
 import axios from 'axios'
-import ElementPlus from 'element-plus'
+import { ElMessage } from 'element-plus'
 import 'element-plus/dist/index.css'
 
 // 创建axios的实例
@@ -13,7 +13,7 @@ service.interceptors.request.use(
     config => {
         const token = localStorage.getItem('token')
         if (token) {
-            config.headers.Authorization = token
+            config.headers.Authorization = `Bearer ${token}`
         }
         return config
     },
@@ -29,17 +29,16 @@ service.interceptors.response.use(
        const code = parseInt(data?.code) || 0
        if (code === 200) {
            return data
-       } else if (code === 201) {
-           return data
-       } else {
+       }  else {
            if (code === -1) {
                if(!config.url?.includes('/login')) {
-                   ElementPlus.ElMessage.error(data.msg || '登录过期，请重新登录')
+                   ElMessage.error(data.msg || '登录过期，请重新登录')
                    localStorage.removeItem('token')
                    localStorage.removeItem('userInfo')
-                   window.location.href = '/login'
+                   window.location.href = '/auth/login'
+                   return Promise.reject(new Error(data.msg || '登录过期'))
                } else {
-                   ElementPlus.ElMessage.error(data.msg || '登录失败')
+                   ElMessage.error(data.msg || '登录失败')
                    return Promise.reject(data.msg || '请求失败')
                }
            }
@@ -47,7 +46,7 @@ service.interceptors.response.use(
        }
     },
     error => {
-        ElementPlus.ElMessage.error(error.message || '网络错误')
+        ElMessage.error(error.message || '网络错误')
         return Promise.reject(error)
     }
 )
