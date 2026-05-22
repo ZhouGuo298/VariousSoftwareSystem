@@ -1,139 +1,576 @@
 <template>
-    <div>
-       <div class="container">
-        <div class="title">
-            <div class="back-home">
-                <el-icon><Back /></el-icon>
-                <span>返回首页</span>
-            </div>
-            <div class="title-text">
-                <h2>登录</h2>
-                <p>登录以继续使用心理健康AI助手</p>
-            </div>
-            <div class="form-container">
-                <el-form
-                    ref="ruleFormRef"
-                    :model="formData"
-                    :rules="rules"
-                    label-position="top"
-                >
-                    <el-form-item label="用户名或邮箱" prop="username">
-                        <el-input v-model="formData.username" size="large" placeholder="请输入用户名" />
-                    </el-form-item>
-                    <el-form-item label="密码" prop="password">
-                        <el-input v-model="formData.password" size="large" type="password" show-password placeholder="请输入密码" />
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)" class="login-btn">登录</el-button>
-                    </el-form-item>
-                </el-form>
-                <div class="footer">
-                    <span>还没有账号？ <router-link to="/register">去注册</router-link></span>
+    <div class="login-wrapper">
+        <div class="login-page">
+            <div class="container" :class="{ active: isRegister }">
+                <!-- 左侧欢迎区域 -->
+                <div class="welcome-box">
+                    <h2>HelloFriend!</h2>
+                    <p>{{ isRegister ? '点击下面按钮登录账号，一起成为心理健康助手的使用者吧！' : '点击下面按钮注册账号，一起成为心理健康助手的使用者吧！' }}</p>
+                    <button @click="toggleMode">
+                        {{ isRegister ? 'Login' : 'Register' }}
+                    </button>
+                </div>
+
+                <!-- 右侧表单区域 -->
+                <div class="form-box">
+                    <!-- 关闭按钮 -->
+                    <div class="close-btn" @click="goHome">×</div>
+                    
+                    <!-- 表单切换区域 -->
+                    <Transition name="fade" mode="out-in">
+                        <!-- 登录表单 -->
+                        <div class="form-content" v-if="!isRegister" key="login">
+                            <h1>登录账号</h1>
+                            <el-form
+                                ref="loginFormRef"
+                                :model="loginData"
+                                :rules="loginRules"
+                                label-position="top"
+                                @submit.prevent="handleLogin"
+                            >
+                                <el-form-item prop="username">
+                                    <el-input 
+                                        v-model="loginData.username" 
+                                        size="large" 
+                                        placeholder="Account"
+                                    />
+                                </el-form-item>
+                                <el-form-item prop="password">
+                                    <el-input 
+                                        v-model="loginData.password" 
+                                        size="large" 
+                                        type="password" 
+                                        show-password 
+                                        placeholder="Password"
+                                    />
+                                </el-form-item>
+                                <el-form-item>
+                                    <div class="captcha-group">
+                                        <el-input 
+                                            v-model="loginData.captcha" 
+                                            size="large" 
+                                            placeholder="Verification Code"
+                                        />
+                                        <div class="captcha-img" @click="refreshCaptcha">
+                                            {{ captchaCode }}
+                                        </div>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item>
+                                    <button type="submit" class="submit-btn" :disabled="loginLoading">
+                                        {{ loginLoading ? '登录中...' : 'Login' }}
+                                    </button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+
+                        <!-- 注册表单 -->
+                        <div class="form-content" v-else key="register">
+                            <h1>注册账号</h1>
+                            <el-form
+                                ref="registerFormRef"
+                                :model="registerData"
+                                :rules="registerRules"
+                                label-position="top"
+                                @submit.prevent="handleRegister"
+                            >
+                                <el-form-item prop="username">
+                                    <el-input 
+                                        v-model="registerData.username" 
+                                        size="large" 
+                                        placeholder="用户名"
+                                    />
+                                </el-form-item>
+                                <el-form-item prop="email">
+                                    <el-input 
+                                        v-model="registerData.email" 
+                                        size="large" 
+                                        placeholder="邮箱"
+                                    />
+                                </el-form-item>
+                                <el-form-item prop="password">
+                                    <el-input 
+                                        v-model="registerData.password" 
+                                        size="large" 
+                                        type="password" 
+                                        show-password 
+                                        placeholder="密码"
+                                    />
+                                </el-form-item>
+                                <el-form-item prop="confirmPassword">
+                                    <el-input 
+                                        v-model="registerData.confirmPassword" 
+                                        size="large" 
+                                        type="password" 
+                                        show-password 
+                                        placeholder="确认密码"
+                                    />
+                                </el-form-item>
+                                <el-form-item>
+                                    <div class="captcha-group">
+                                        <el-input 
+                                            v-model="registerData.captcha" 
+                                            size="large" 
+                                            placeholder="验证码"
+                                        />
+                                        <div class="captcha-img" @click="refreshCaptcha">
+                                            {{ captchaCode }}
+                                        </div>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item>
+                                    <button type="submit" class="submit-btn" :disabled="registerLoading">
+                                        {{ registerLoading ? '注册中...' : 'Register' }}
+                                    </button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                    </Transition>
                 </div>
             </div>
-         </div>
-       </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { login } from '@/api/admin'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { login, register } from '@/api/admin'
 
 const router = useRouter()
 
-const formData = ref({
+// 模式切换
+const isRegister = ref(false)
+const toggleMode = () => {
+    isRegister.value = !isRegister.value
+    refreshCaptcha()
+}
+
+// 登录表单
+const loginFormRef = ref()
+const loginLoading = ref(false)
+const loginData = reactive({
     username: '',
-    password: ''
+    password: '',
+    captcha: ''
 })
 
-const rules = ref({
+const loginRules = reactive({
     username: [
         { required: true, message: '请输入用户名', trigger: 'blur' }
     ],
     password: [
         { required: true, message: '请输入密码', trigger: 'blur' }
+    ],
+    captcha: [
+        { required: true, message: '请输入验证码', trigger: 'blur' }
     ]
 })
 
-const ruleFormRef = ref()
+// 注册表单
+const registerFormRef = ref()
+const registerLoading = ref(false)
+const registerData = reactive({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    captcha: ''
+})
 
-const submitForm = async (formEL) => {
-    if(!formEL) {
-        return
+const validateConfirmPassword = (rule, value, callback) => {
+    if (value !== registerData.password) {
+        callback(new Error('两次输入密码不一致'))
+    } else {
+        callback()
     }
-    await formEL.validate((valid,fields) => {   
-        if(valid) {
-            console.log('表单数据:', formData.value)
-            login(formData.value).then(res => {
-                console.log('登录响应:', res)
-                let token = null
-                let userInfo = null
-                
-                if (res && (res.code === 200 || res.code === '200')) {
-                    if (res.data && res.data.token) {
-                        token = res.data.token
-                        userInfo = res.data.userInfo || res.data
-                    } else if (res.token) {
-                        token = res.token
-                        userInfo = res.userInfo || res
-                    }
-                }
-                
-                if(token) {
-                    localStorage.setItem('token', token)
-                    localStorage.setItem('userInfo', JSON.stringify(userInfo || {}))
-                    console.log('保存 token 成功:', token)
-                    console.log('保存 userInfo 成功:', userInfo)
+}
 
-                    if(userInfo && (userInfo.userType === 2 || userInfo.roleType === 2 || userInfo.roleType === '2')){
-                        router.push('/user/dashboard')
-                    } else {
-                        router.push('/')
-                    }
-                } else {
-                    console.error('未获取到 token，登录响应:', res)
-                }
+const registerRules = reactive({
+    username: [
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    ],
+    email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, message: '密码至少6个字符', trigger: 'blur' }
+    ],
+    confirmPassword: [
+        { required: true, message: '请确认密码', trigger: 'blur' },
+        { validator: validateConfirmPassword, trigger: 'blur' }
+    ],
+    captcha: [
+        { required: true, message: '请输入验证码', trigger: 'blur' }
+    ]
+})
 
-            }).catch(err => {
-                console.error('登录错误:', err)
-            })
+// 验证码
+const captchaCode = ref('')
+const refreshCaptcha = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTWXY23456789'
+    let code = ''
+    for(let i=0; i<4; i++){
+        code += chars[Math.floor(Math.random() * chars.length)]
+    }
+    captchaCode.value = code
+}
+refreshCaptcha()
+
+// 登录处理
+const handleLogin = async () => {
+    if (!loginFormRef.value) return
+    
+    await loginFormRef.value.validate((valid) => {
+        if (!valid) return
+        
+        // 验证码校验（本地）
+        if (loginData.captcha.toUpperCase() !== captchaCode.value.toUpperCase()) {
+            alert('验证码错误')
+            refreshCaptcha()
+            return
         }
+        
+        loginLoading.value = true
+        
+        login(loginData).then(res => {
+            let token = null
+            let userInfo = null
+            
+            if (res && (res.code === 200 || res.code === '200')) {
+                if (res.data && res.data.token) {
+                    token = res.data.token
+                    userInfo = res.data.userInfo || res.data
+                } else if (res.token) {
+                    token = res.token
+                    userInfo = res.userInfo || res
+                }
+            }
+            
+            if (token) {
+                localStorage.setItem('token', token)
+                localStorage.setItem('userInfo', JSON.stringify(userInfo || {}))
+                
+                if (userInfo && (userInfo.userType === 2 || userInfo.roleType === 2 || userInfo.roleType === '2')) {
+                    router.push('/user/dashboard')
+                } else {
+                    router.push('/')
+                }
+            } else {
+                alert('登录失败：未获取到 token')
+            }
+        }).catch(err => {
+            console.error('登录错误:', err)
+            alert('登录失败')
+        }).finally(() => {
+            loginLoading.value = false
+        })
     })
+}
+
+// 注册处理
+const handleRegister = async () => {
+    if (!registerFormRef.value) return
+    
+    await registerFormRef.value.validate((valid) => {
+        if (!valid) return
+        
+        // 验证码校验（本地）
+        if (registerData.captcha.toUpperCase() !== captchaCode.value.toUpperCase()) {
+            alert('验证码错误')
+            refreshCaptcha()
+            return
+        }
+        
+        registerLoading.value = true
+        
+        register({
+            username: registerData.username,
+            email: registerData.email,
+            password: registerData.password
+        }).then(res => {
+            alert('注册成功！请登录')
+            isRegister.value = false
+            loginData.username = registerData.username
+            registerData.username = ''
+            registerData.email = ''
+            registerData.password = ''
+            registerData.confirmPassword = ''
+            registerData.captcha = ''
+        }).catch(err => {
+            console.error('注册错误:', err)
+            alert('注册失败')
+        }).finally(() => {
+            registerLoading.value = false
+        })
+    })
+}
+
+// 返回首页
+const goHome = () => {
+    router.push('/')
 }
 </script>
 
 <style lang="scss" scoped>
+.login-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(200deg, #f3e7e9, #e3eeff);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-page {
+    width: 900px;
+    height: 580px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(136, 96, 208, 0.15);
+    border: 1px solid rgba(255,255,255,0.5);
+    overflow: hidden;
+    position: relative;
+}
+
 .container {
-    width: 300px;
-    .title {
-       .back-home {
-            margin-bottom: 60px;
-       }
-       .title-text {
-         text-align: center;
-            h2 {
-                font-size: 32px;
-                margin-bottom: 10px;
-            }
-            p {
-                font-size: 16px;
-                color: #6b7280;
-            }
-       }
-       .form-container {
-            margin-top: 30px;
-       }
-       .login-btn {
-            margin-top: 20px;
-            width: 100%;
-       }
-       .footer {
-            margin-top: 20px;
-            text-align: center;
-       }
-    }
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+/* 左侧欢迎栏 */
+.welcome-box {
+    width: 450px;
+    height: 100%;
+    background: url('https://neeko-copilot.bytedance.net/api/text2image?prompt=anime%20girl%20sketch%20style%20cute%20portrait%20monochrome&image_size=portrait_4_3') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    padding: 2rem;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    position: relative;
+}
+
+.welcome-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(168, 139, 235, 0.7);
+}
+
+.welcome-box h2 {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+    /* 文字跳动动画 */
+    text-shadow: 0 0 10px rgba(255, 180, 255, 0.6), 0 0 20px rgba(255,120,255,0.4);
+    animation: textBounce 2s ease-in-out infinite;
+}
+
+.welcome-box p {
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+    animation: textBounce 2s ease-in-out infinite 0.3s;
+}
+
+.welcome-box button {
+    padding: 12px 40px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 25px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    z-index: 1;
+    animation: textBounce 2s ease-in-out infinite 0.6s;
+}
+
+.welcome-box button:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+/* 右侧表单栏 */
+.form-box {
+    width: 450px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: #f0f4ff;
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.form-box h1 {
+    font-size: 2rem;
+    color: #7f53ac;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+    text-align: center;
+    animation: titleBounce 2s ease-in-out infinite;
+}
+
+.form-content {
+    width: 100%;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* 表单输入框 */
+:deep(.el-form-item) {
+    margin-bottom: 1.2rem;
+}
+
+:deep(.el-input__wrapper) {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 4px 15px;
+}
+
+:deep(.el-input__inner) {
+    height: 44px;
+    font-size: 0.95rem;
+}
+
+/* 验证码行 */
+.captcha-group {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.captcha-group :deep(.el-input) {
+    flex: 1;
+}
+
+.captcha-img {
+    padding: 10px 14px;
+    background: #f5e6e8;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    user-select: none;
+    transition: 0.3s;
+    cursor: pointer;
+    color: #9b59b6;
+    min-width: 70px;
+    text-align: center;
+}
+
+.captcha-img:hover {
+    transform: scale(1.05);
+    background: #f0d4d8;
+}
+
+/* 提交按钮 */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(45deg, #a88beb, #f8ceec);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 12px rgba(168, 139, 235, 0.3);
+    margin-top: 1rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(168, 139, 235, 0.4);
+    background: linear-gradient(45deg, #9575de, #f5b8e8);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 关闭按钮 */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ccc;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    background: #999;
+    transform: rotate(90deg);
+}
+
+/* 切换动画样式 */
+.container.active .welcome-box {
+    transform: translateX(100%);
+}
+
+.container.active .form-box {
+    transform: translateX(-100%);
+}
+
+/* 文字跳动动画 */
+@keyframes textBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* 标题弹性跳动动画 */
+@keyframes titleBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
 }
 </style>
-
