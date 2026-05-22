@@ -30,3 +30,19 @@ export function addArticle(data) {
 export function getArticleDetail(id) {
     return service.get(`/knowledge/article/${id}`)
 }
+
+export function getConsultationPage(params) {
+    return service.get('/psychological-chat/sessions', {params})
+}
+
+export function getSessionDetailDetail(sessionId) {
+    return service.get(`/psychological-chat/sessions/${sessionId}/messages`)
+}
+
+export function getEmotionalPage(params) {
+    return service.get('/emotion-diary/admin/page', {params})
+}
+
+export function deleteEmotional(id) {
+    return service.delete(`/emotion-diary/admin/${id}`)
+}
