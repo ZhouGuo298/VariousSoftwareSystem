@@ -4,8 +4,8 @@
             <div class="container" :class="{ active: isRegister }">
                 <!-- 左侧欢迎区域 -->
                 <div class="welcome-box">
-                    <h2>HelloFriend!</h2>
-                    <p>{{ isRegister ? '点击下面按钮登录账号，一起成为心理健康助手的使用者吧！' : '点击下面按钮注册账号，一起成为心理健康助手的使用者吧！' }}</p>
+                    <h2>{{ isRegister ? 'HelloFriend!' : 'Welcome!' }}</h2>
+                    <p>{{ isRegister ? '已有账号？点击下方按钮登录你的账号，享受更多功能。' : '还没有账号？点击下方按钮注册你的账号，加入我们，开始使用心理健康助手吧！' }}</p>
                     <button @click="toggleMode">
                         {{ isRegister ? 'Login' : 'Register' }}
                     </button>
@@ -353,7 +353,7 @@ const goHome = () => {
 .welcome-box {
     width: 450px;
     height: 100%;
-    background: url('https://neeko-copilot.bytedance.net/api/text2image?prompt=anime%20girl%20sketch%20style%20cute%20portrait%20monochrome&image_size=portrait_4_3') no-repeat center center;
+    background: url('@/assets/login-bg.jpg') no-repeat center center;
     background-size: cover;
     display: flex;
     flex-direction: column;
@@ -372,13 +372,14 @@ const goHome = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(168, 139, 235, 0.7);
+    background: rgba(162, 143, 207, 0.7);
 }
 
 .welcome-box h2 {
     font-size: 2.5rem;
     letter-spacing: 2px;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 45px;
     position: relative;
     z-index: 1;
     /* 文字跳动动画 */
@@ -434,11 +435,10 @@ const goHome = () => {
 
 .form-box h1 {
     font-size: 2rem;
-    color: #7f53ac;
+    color: #332a2a;
     margin-bottom: 2rem;
     letter-spacing: 2px;
     text-align: center;
-    animation: titleBounce 2s ease-in-out infinite;
 }
 
 .form-content {
@@ -522,7 +522,7 @@ const goHome = () => {
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-4px);
     box-shadow: 0 6px 20px rgba(168, 139, 235, 0.4);
-    background: linear-gradient(45deg, #9575de, #f5b8e8);
+    background: linear-gradient(45deg, #a888f1, #f5b8e8);
 }
 
 .submit-btn:disabled {
@@ -568,9 +568,4 @@ const goHome = () => {
     50% { transform: translateY(-5px); }
 }
 
-/* 标题弹性跳动动画 */
-@keyframes titleBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-}
 </style>
