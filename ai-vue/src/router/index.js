@@ -39,7 +39,7 @@ const BackEndLayoutRoutes = [
                     title:'情绪日志',
                     icon:'User'
                 }
-            }
+            },
         ]   
     },
     {
@@ -57,7 +57,7 @@ const BackEndLayoutRoutes = [
     },
     {
         path:'/',
-        redirect:'/user/dashboard'
+        component:()=>import('@/views/index.vue'),
     }
 
 ]
