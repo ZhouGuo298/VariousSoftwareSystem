@@ -31,6 +31,14 @@ export function getArticleDetail(id) {
     return service.get(`/knowledge/article/${id}`)
 }
 
+export function changeArticleStatus(id,data) {
+    return service.put(`/knowledge/article/${id}/status`,data)
+}
+
+export function deleteArticle(id) {
+    return service.delete(`/knowledge/article/${id}`)
+}
+
 export function getConsultationPage(params) {
     return service.get('/psychological-chat/sessions', {params})
 }
