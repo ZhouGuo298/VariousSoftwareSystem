@@ -189,15 +189,40 @@ const getRiskLevelText = (risklevel) => {
 const formItem = [
     { comp: 'input', prop: 'userId', label: '用户ID', placeholder: '请输入用户ID' },
     {
-        comp: 'select', prop: 'moodScreRange', label: '情绪评分', placeholder: '请选择评分范围', options: [{
-            label: '低分(1-3)',
-            value: '1-3'
+        comp: 'select', prop: 'moodScore', label: '情绪评分', placeholder: '请输入情绪评分',options: [
+        {
+            label: '0',
+            value: 0    
+        },{
+            label: '1',
+            value: 1
         }, {
-            label: '中分(4-6)',
-            value: '4-6'
+            label: '2',
+            value: 2
         }, {
-            label: '高分(7-10)',
-            value: '7-10'
+            label: '3',
+            value: 3
+        }, {
+            label: '4',
+            value: 4
+        }, {
+            label: '5',
+            value: 5    
+        }, {
+            label: '6',
+            value: 6
+        }, {
+            label: '7',
+            value: 7
+        }, {
+            label: '8',
+            value: 8
+        }, {
+            label: '9',
+            value: 9
+        }, {
+            label: '10',
+            value: 10
         }]
     },
 ]
@@ -217,14 +242,35 @@ const handleChange = (page) => {
     handleSearch()
 }
 
+const lastSearchParams = ref(null)
+
 const handleSearch = async (formData) => {
-    const params = formData
-        ? { current: pagination.currentPage, size: pagination.size, ...formData }
+    if (formData) {
+        lastSearchParams.value = formData
+    }
+
+    const currentForm = formData || lastSearchParams.value
+    const params = currentForm
+        ? { current: pagination.currentPage, size: pagination.size, ...currentForm }
         : { current: pagination.currentPage, size: pagination.size }
+
+    // 过滤掉空字符串参数，避免后端忽略无效参数返回全部数据
+    Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+            delete params[key]
+        }
+    })
 
     const res = await getEmotionalPage(params)
     const data = res?.data || res
-    tableData.value = data?.records || data || []
+    let records = data?.records || []
+
+    // 前端筛选 moodScore
+    if (currentForm && currentForm.moodScore !== '' && currentForm.moodScore !== null && currentForm.moodScore !== undefined) {
+        records = records.filter(item => item.moodScore === Number(currentForm.moodScore))
+    }
+
+    tableData.value = records
     if (data?.total !== undefined) {
         pagination.total = data.total
     }
@@ -244,8 +290,6 @@ const viewSessionDetail = (row) => {
     detailDialogVisible.value = true
 }
 
-// 详情弹窗数据
-const detailData = ref({})
 
 // 删除弹窗状态
 const handleDelete = (row) => {

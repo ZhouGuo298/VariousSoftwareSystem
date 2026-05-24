@@ -27,9 +27,9 @@
             <el-table-column label="操作" width="250" fixed="right">
                 <template #default="scope">
                    <el-button text type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-                   <el-button v-if="scope.row.status === 0 || scope.row.status === 2" text type="success">发布</el-button>
-                   <el-button v-if="scope.row.status === 1" text type="warning">下线</el-button>
-                   <el-button  text type="danger">删除</el-button>
+                   <el-button @click="handlePublish(scope.row)" v-if="scope.row.status === 0 || scope.row.status === 2" text type="success">发布</el-button>
+                   <el-button @click="handleUnpublish(scope.row)" v-if="scope.row.status === 1" text type="warning">下线</el-button>
+                   <el-button @click="handleDelete(scope.row)" text type="danger">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -47,9 +47,12 @@
 <script setup>
 import PageHead from '@/components/PageHead.vue'
 import Tabelserch from '@/components/Tabelserch.vue'
-import { categoryTree, articleList, getArticleDetail } from '@/api/admin'
+import { categoryTree, articleList, getArticleDetail, deleteArticle, changeArticleStatus } from '@/api/admin'
 import { onMounted, reactive, ref } from 'vue'
 import ArticleDialog from '@/components/ArticleDialog.vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
+
+
 
 // 生命周期钩子
 // onMounted(() => {
@@ -130,12 +133,26 @@ const statusMap = {
     2: '已下线'
 }
 
+const lastSearchParams = ref(null)
+
 const handleSearch = async (formData) => {
+    if (formData) {
+        lastSearchParams.value = formData
+    }
+
+    const currentForm = formData || lastSearchParams.value
     // 合并分页参数和查询参数
     const params = {
         ...pagination,
-        ...formData
+        ...currentForm
     }
+
+    // 过滤掉空字符串参数
+    Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+            delete params[key]
+        }
+    })
 
     console.log('查询参数:', params)
     const res = await articleList(params)
@@ -143,13 +160,66 @@ const handleSearch = async (formData) => {
     
     // 提取数据，兼容多种返回格式
     const data = res?.data || res
-    tableData.value = data?.records || data || []
+    const records = Array.isArray(data?.records) ? data.records : (Array.isArray(data) ? data : [])
+    tableData.value = records
     if (data?.total !== undefined) {
         pagination.total = data.total
     }
 }
 
+// 发布文章
+const handlePublish = (row) => {
+    // 确认发布
+    ElMessageBox.confirm(`确认发布文章${row.title}吗？`, '确认', {
+        confirmButtonText: '确定发布',
+        cancelButtonText: '取消',
+        type: 'info'
+    }).then(() => {
+    if(!row.id){
+        return
+    }
+    changeArticleStatus(row.id,{status:1}).then(res => {
+        ElMessage.success('发布成功')
+        handleSearch()
+    })
+    })
+}
 
+// 下线文章
+const handleUnpublish = (row) => {
+    // 确认下线
+    ElMessageBox.confirm(`确认下线文章${row.title}吗？`, '确认', {
+        confirmButtonText: '确定下线',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).then(() => {
+    if(!row.id){
+        return
+    }
+    changeArticleStatus(row.id,{status:2}).then(res => {
+        ElMessage.success('下线成功')
+        handleSearch()
+    })
+    })
+}
+
+// 删除文章
+const handleDelete = (row) => {
+    // 确认删除
+    ElMessageBox.confirm(`确认删除文章${row.title}吗？`, '确认', {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'danger'
+    }).then(() => {
+    if(!row.id){
+        return
+    }
+    deleteArticle(row.id).then(res => {
+        ElMessage.success('删除成功')
+        handleSearch()
+    })
+    })
+}
 
 onMounted(async () => {
     // 初始化分类映射
