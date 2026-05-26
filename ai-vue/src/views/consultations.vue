@@ -4,7 +4,7 @@
     <el-table :data="tableData" style="width: 100%">
       <el-table-column label="会话ID" width="100">
         <template #default="scope">
-          <el-avatar>{{ scope.row.userNickname }}</el-avatar>
+          <el-avatar :size="36">{{ getAvatarText(scope.row.userNickname) }}</el-avatar>
         </template>
       </el-table-column>
       <el-table-column label="情绪日志">
@@ -130,6 +130,11 @@ const handleSearch = async () => {
 
 // 咨询记录详情弹窗
 const showDetailDialog = ref(false);
+
+const getAvatarText = (value) => {
+  const text = String(value || "?").trim();
+  return text ? text.slice(0, 1).toUpperCase() : "?";
+};
 
 onMounted(() => {
   handleSearch();

@@ -35,10 +35,11 @@
                     <div v-if="!imgUrl" class="cover-placeholder">
                         <p>点击上传封面图片</p>
                     </div>
-                    <img v-else :src="imgUrl" alt="封面图片" class="cover-image" />
+                    <img v-else :src="imgUrl" alt="封面图片" class="cover-image" @error="handlePreviewError" />
                 </el-upload>
+                <p v-if="uploadError" class="upload-error">{{ uploadError }}</p>
                 <div v-if="imgUrl" class="cover-remove">
-                  <el-button type="danger" size="mini" @click="removeCover">删除</el-button>
+                  <el-button type="danger" size="small" @click="removeCover">删除</el-button>
                 </div>  
 
             </div>
@@ -137,6 +138,15 @@ const commonTags = [
 ]
 
 const imgUrl = ref('')
+const uploadError = ref('')
+
+const resolveFileUrl = (filePath) => {
+  if (!filePath) return ''
+  if (/^https?:\/\//.test(filePath) || filePath.startsWith('/api/')) {
+    return filePath
+  }
+  return filebaseURL + filePath
+}
 
 const beforeUpload = (file) => {
     // 针对图片上传的校验
@@ -153,18 +163,24 @@ const beforeUpload = (file) => {
     return true
 }
 const handleUpload = async ({file}) => {
+  uploadError.value = ''
   const businessId = crypto.randomUUID()
   const fileRes = await uploadFile(file,{businessId:businessId})
   console.log(fileRes)
 
   const filePath = fileRes.data?.filePath
-  imgUrl.value = filebaseURL + filePath
+  imgUrl.value = resolveFileUrl(filePath)
   formData.coverImg = filePath
+}
+
+const handlePreviewError = () => {
+  uploadError.value = '封面图片上传成功，但预览地址暂时无法访问，请确认后端已重启并启用 /api/uploads 静态资源访问。'
 }
 
 const removeCover = () => {
   imgUrl.value = ''
   formData.coverImg = ''
+  uploadError.value = ''
 }
 
 const handleContentChange = (html) => {
@@ -224,6 +240,12 @@ const isEdit = computed(() => !!props.article?.id)
 .cover-image {
   width: 200px;
   height: 120px;
+  object-fit: cover;
   display: block;
+}
+.upload-error {
+  margin: 8px 0 0;
+  color: #f56c6c;
+  font-size: 12px;
 }
 </style>
