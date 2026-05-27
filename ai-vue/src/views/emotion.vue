@@ -1,6 +1,6 @@
 <template>
     <div>
-        <PageHead title="情绪日志" />
+        <PageHead pageTitle="情绪日志" />
         <Tabelserch :formItem="formItem" @search="handleSearch" />
         <el-table :data="tableData" style="width: 100%">
             <el-table-column prop="userId" label="用户ID" width="80" />

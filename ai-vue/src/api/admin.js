@@ -58,3 +58,7 @@ export function getEmotionalPage(params) {
 export function deleteEmotional(id) {
     return service.delete(`/emotion-diary/admin/${id}`)
 }
+
+export function logout() {
+    return service.post('/user/logout')
+}
