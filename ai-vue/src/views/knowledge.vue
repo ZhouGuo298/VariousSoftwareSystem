@@ -3,7 +3,6 @@
         <PageHead pageTitle="知识文章">
             <template #buttons>
                 <el-button type="primary" @click="dialogVisible = true">新增</el-button>
-                <el-button type="primary">编辑</el-button>
             </template>
         </PageHead>
         <Tabelserch :formItem="formItem" @search="handleSearch"></Tabelserch>
