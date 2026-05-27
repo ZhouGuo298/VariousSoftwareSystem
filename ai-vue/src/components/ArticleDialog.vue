@@ -89,7 +89,7 @@ const props = defineProps({
    }
 })
 
-const emit = defineEmits(['update:modelValue','submit'])
+const emit = defineEmits(['update:modelValue','success'])
 
 const dialogVisible = computed({
   get(){
@@ -218,8 +218,10 @@ const handleSubmit = () => {
     delete submitData.tagArray
     
     addArticle(submitData).then(res => {
-    loading.value = false
-    emit('success')
+      loading.value = false
+      emit('success')
+    }).catch(() => {
+      loading.value = false
     })
   })
 }
