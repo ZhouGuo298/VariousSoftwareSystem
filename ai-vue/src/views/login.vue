@@ -323,6 +323,7 @@ const goHome = () => {
     width: 100%;
     height: 100%;
     background: linear-gradient(200deg, #f3e7e9, #e3eeff);
+    background-image: url('@/assets/bg.png');
     z-index: 9999;
     display: flex;
     justify-content: center;

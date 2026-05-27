@@ -4,7 +4,7 @@
       <el-header class="home-header">
         <div class="nav-shell">
           <button class="brand" type="button" @click="go('/')">
-            <img src="@/assets/logo.png" alt="心理健康AI助手" class="brand-logo" />
+            <img src="@/assets/logo.svg" alt="心理健康AI助手" class="brand-logo" />
             <span>心理健康AI助手</span>
           </button>
 
