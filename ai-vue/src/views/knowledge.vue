@@ -39,7 +39,7 @@
             :page-size="pagination.size"
             @change="handleChange"
         />
-        <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle"  :categories="categories" @submit="handleSubmit"></ArticleDialog>
+        <ArticleDialog v-model:modelValue="dialogVisible" :article="currentArticle"  :categories="categories" @success="handleSubmit"></ArticleDialog>
        </div>
 </template>
 
@@ -227,9 +227,10 @@ onMounted(async () => {
     const data = res?.data || res || []
     
     categories.value = data.map(item => {
-        categoryMap[item.id] = item.categoryName
+        const categoryName = item.categoryName || item.name
+        categoryMap[item.id] = categoryName
         return {
-            label: item.categoryName,
+            label: categoryName,
             value: item.id
         }
     })
@@ -242,7 +243,10 @@ onMounted(async () => {
 
 // 提交表单
 const handleSubmit = () => {
-
+    dialogVisible.value = false
+    currentArticle.value = null
+    pagination.currentPage = 1
+    handleSearch()
 }
 
 const currentArticle = ref(null)

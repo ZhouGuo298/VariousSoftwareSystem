@@ -6,8 +6,8 @@
             <el-table-column prop="userId" label="用户ID" width="80" />
             <el-table-column label="会话ID" width="80">
                 <template #default="scope">
-                    <el-avatar>
-                        {{ scope.row.nickname }}
+                    <el-avatar :size="36">
+                        {{ getAvatarText(scope.row.nickname || scope.row.username || scope.row.userId) }}
                     </el-avatar>
                 </template>
             </el-table-column>
@@ -184,6 +184,11 @@ const getRiskLevelText = (risklevel) => {
         '3': '危机',
     }
     return riskLevelMap[risklevel] || '未知风险等级'
+}
+
+const getAvatarText = (value) => {
+    const text = String(value || '?').trim()
+    return text ? text.slice(0, 1).toUpperCase() : '?'
 }
 
 const formItem = [

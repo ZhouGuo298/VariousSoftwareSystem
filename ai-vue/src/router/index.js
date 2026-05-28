@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'  
-import BackEndLayout from '@/components/backendlayout.vue'
+import BackEndLayout from '@/components/BackendLayout.vue'
 import AuthLayout from '@/components/Authlayout.vue'
 
 // 路由配置-嵌套路由
@@ -26,8 +26,8 @@ const BackEndLayoutRoutes = [
                 }
             },
             {
-                path:'chat',
-                component:()=>import('@/views/chat.vue'),
+                path:'consultations',
+                component:()=>import('@/views/consultations.vue'),
                 meta:{
                     title:'咨询记录',
                     icon:'Message'
@@ -40,7 +40,7 @@ const BackEndLayoutRoutes = [
                     title:'情绪日志',
                     icon:'User'
                 }
-            }
+            },
         ]   
     },
     {
@@ -53,16 +53,14 @@ const BackEndLayoutRoutes = [
                 meta:{
                     title:'登录'
                 }
-            },
-            {
-                path:'register',
-                component:()=>import('@/views/register.vue'),
-                meta:{
-                    title:'注册'
-                }
             }
         ],
+    },
+    {
+        path:'/',
+        component:()=>import('@/views/index.vue'),
     }
+
 ]
 
 // 路由实例
