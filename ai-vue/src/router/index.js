@@ -77,14 +77,23 @@ router.beforeEach((to,from,next)=>{
     // 当前是否登录
     if(token){
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-        if(userInfo.userType == 2){
+        if(userInfo.roleType == 2){
             if(to.path.startsWith('/user')){
                 next()
             }else{
                 next('/user/dashboard')
             }
-        } else if(userInfo.userType == 1){
-            next('/')
+        } else if(userInfo.roleType == 1){
+            if(to.path.startsWith('/user')){
+                next('/auth/login')
+            }else{
+                next()
+            }
+        }else{
+            // roleType 不明确时，清除 token 防止死循环
+            localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
+            next('/auth/login')
         }
     }else{
         if(to.path.startsWith('/user')){

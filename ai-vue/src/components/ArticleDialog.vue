@@ -60,18 +60,18 @@
           <template #footer>
             <el-button @click="BtnPreview = !BtnPreview">{{BtnPreview ? '关闭预览' : '预览'}}</el-button>
             <el-button @click="handleClose">取消</el-button>
-            <el-button type="primary" @click="handleSubmit" :loading="loading">{{isEdit ? '新增' : '更新'}}</el-button>
+            <el-button type="primary" @click="handleSubmit" :loading="loading">{{isEdit ? '更新' : '添加'}}</el-button>
           </template>
       </el-dialog>
 </template>
 
 <script setup>
-import { ref, computed,reactive,nextTick } from 'vue'
+import { ref, computed,reactive,nextTick,watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { uploadFile } from '@/api/admin'
 import { filebaseURL } from '@/config/index'
 import RichTextEditor from '@/components/RichTextEditor.vue'
-import { addArticle } from '@/api/admin'
+import { addArticle,updateArticle } from '@/api/admin'
 
 const props = defineProps({
   modelValue: {
@@ -101,7 +101,13 @@ const dialogVisible = computed({
 
 // 弹窗关闭时触发
 const handleClose = () => {
-  
+  //重置表单
+  formRef.value.resetFields()
+  businessId.value = null
+  formData.tagArray = []
+  //删除封面图片
+  removeCover()
+  emit('update:modelValue', false)
 }
 
 const formData = reactive({
@@ -152,9 +158,13 @@ const beforeUpload = (file) => {
     }
     return true
 }
+
+const businessId = ref('')
+
 const handleUpload = async ({file}) => {
-  const businessId = crypto.randomUUID()
-  const fileRes = await uploadFile(file,{businessId:businessId})
+  uploadError.value = ''
+  businessId.value = crypto.randomUUID()
+  const fileRes = await uploadFile(file,{businessId:businessId.value})  
   console.log(fileRes)
 
   const filePath = fileRes.data?.filePath
@@ -201,13 +211,42 @@ const handleSubmit = () => {
 
     delete submitData.tagArray
     
-    addArticle(submitData).then(res => {
-    loading.value = false
-    emit('success')
-    })
+    if(!isEdit.value){
+      addArticle(submitData).then(res => {
+        loading.value = false
+        emit('success')
+      }).catch(() => {
+        loading.value = false
+      })
+    }else{
+      updateArticle(props.article.id,submitData).then(res => {
+        loading.value = false
+        emit('success')
+      }).catch(() => {
+        loading.value = false
+      })
+    }
   })
 }
+  
 const isEdit = computed(() => !!props.article?.id)
+
+//监听编辑数据变化，更新formData
+watch(() => props.article, (newVal) => {
+  if(newVal){
+    nextTick(() => {
+      Object.assign(formData, newVal)
+      //使用现有id
+      businessId.value = newVal.id
+      //封面url
+      imgUrl.value = resolveFileUrl(newVal.coverImg)
+      //将tags字符串转换为tagArray数组
+      if(newVal.tags){
+        formData.tagArray = newVal.tags.split(',').filter(tag => tag.trim())
+      }
+    })
+  }
+})
 </script>
 
 <style lang="scss" scoped>
