@@ -2,7 +2,7 @@
     <div>
         <PageHead pageTitle="知识文章">
             <template #buttons>
-                <el-button type="primary" @click="dialogVisible = true">新增</el-button>
+                <el-button type="primary" @click="handleEdit({})">新增</el-button>
             </template>
         </PageHead>
         <Tabelserch :formItem="formItem" @search="handleSearch"></Tabelserch>
@@ -250,15 +250,23 @@ const handleSubmit = () => {
 }
 
 const currentArticle = ref(null)
+const handleSuccess = () => {
+    dialogVisible.value = false
+    handleSearch()
+}
 // 编辑文章
 const handleEdit = (row) => {
     if(!row.id){
-        return
-    }
-    getArticleDetail(row.id).then(res => {
-        currentArticle.value = res
+        // 新增文章
+        currentArticle.value = null
         dialogVisible.value = true
-    })
+    } else {
+        // 编辑文章
+        getArticleDetail(row.id).then(res => {
+            currentArticle.value = res.data
+            dialogVisible.value = true
+        })
+    }
 }
 </script>
 
