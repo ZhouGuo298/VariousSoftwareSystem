@@ -1,12 +1,6 @@
 <template>
   <div class="home-page">
-    <el-container class="home-layout">
-      <el-header class="home-header">
-        <UserNavbar />
-      </el-header>
-
-      <el-main class="home-main">
-        <section class="hero">
+    <section class="hero">
           <div class="hero-container">
             <div class="hero-content">
               <h1>
@@ -105,45 +99,6 @@
             </p>
           </div>
         </section>
-      </el-main>
-
-      <el-footer class="home-footer">
-        <div class="footer-shell">
-          <div class="footer-brand">
-            <span>心理健康AI助手</span>
-            <p>让每一次情绪表达都被认真对待。</p>
-          </div>
-
-          <div class="footer-links">
-            <div>
-              <h4>产品</h4>
-              <button type="button" @click="go('/user/knowledge')">
-                知识库
-              </button>
-              <button type="button" @click="go('/user/emotion')">
-                情绪日志
-              </button>
-              <button type="button" @click="go('/user/consultations')">
-                咨询记录
-              </button>
-            </div>
-            <div>
-              <h4>关于</h4>
-              <button type="button" @click="privacyVisible = true">
-                隐私政策
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="footer-bottom">
-          <span
-            >© 2026 AI Psychological Assistant System. All rights
-            reserved.</span
-          >
-        </div>
-      </el-footer>
-    </el-container>
 
     <el-dialog
       v-model="privacyVisible"
@@ -178,15 +133,12 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import UserNavbar from "@/components/UserNavbar.vue";
 import {
   ChatDotRound,
   DataAnalysis,
-  House,
   Lock,
   Notebook,
   Reading,
-  User,
 } from "@element-plus/icons-vue";
 
 const router = useRouter();
@@ -635,31 +587,7 @@ const stats = [
   color: #c8c0e6;
 }
 
-.footer-links {
-  display: flex;
-  gap: 70px;
-}
 
-.footer-links h4 {
-  margin-bottom: 12px;
-  color: #fff;
-  font-size: 15px;
-}
-
-.footer-links button {
-  display: block;
-  margin: 8px 0;
-  border: 0;
-  background: transparent;
-  color: #c8c0e6;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-}
-
-.footer-links button:hover {
-  color: #fff;
-}
 
 .footer-bottom {
   max-width: 1160px;
@@ -736,12 +664,6 @@ const stats = [
     padding: 30px 24px;
   }
 
-  .footer-links {
-    flex-direction: column;
-    gap: 24px;
-  }
-}
-
 @media (max-width: 520px) {
   .brand span {
     font-size: 16px;
@@ -759,6 +681,7 @@ const stats = [
 
   .stats {
     grid-template-columns: 1fr;
+  }
   }
 }
 </style>

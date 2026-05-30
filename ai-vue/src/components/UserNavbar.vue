@@ -7,9 +7,27 @@
       </button>
 
       <nav class="nav-links" aria-label="主页导航">
-        <el-button class="nav-btn" text :icon="House" @click="go('/customer/home')">主页</el-button>
-        <el-button class="nav-btn" text :icon="Reading" @click="go('/user/knowledge')">知识库</el-button>
-        <el-button class="nav-btn" text :icon="AIchat" @click="go('/customer/chat')">AI咨询</el-button>
+        <el-button
+          class="nav-btn"
+          :class="{ active: route.path === '/customer/home' }"
+          text
+          :icon="House"
+          @click="go('/customer/home')"
+        >主页</el-button>
+        <el-button
+          class="nav-btn"
+          :class="{ active: route.path === '/user/knowledge' }"
+          text
+          :icon="Reading"
+          @click="go('/user/knowledge')"
+        >知识库</el-button>
+        <el-button
+          class="nav-btn"
+          :class="{ active: route.path === '/customer/chat' }"
+          text
+          :icon="AIchat"
+          @click="go('/customer/chat')"
+        >AI咨询</el-button>
       </nav>
     </div>
 
@@ -132,8 +150,10 @@ const handleCommand = (command) => {
         color: #409eff;
       }
 
-      &.active {
+      &.is-active, &.active {
         color: #409eff;
+        background-color: rgba(64, 158, 255, 0.1);
+        border-radius: 4px;
       }
     }
   }

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import BackEndLayout from "@/components/BackendLayout.vue";
 import AuthLayout from "@/components/Authlayout.vue";
-import UserNavbar from "@/components/UserNavbar.vue";
+import UserLayout from "@/components/UserLayout.vue";
 
 // 路由配置-嵌套路由
 const BackEndLayoutRoutes = [
@@ -67,21 +67,20 @@ const UserLayoutRoutes = [
   {
     path: "/customer",
     redirect: "/customer/home",
+    component: UserLayout,
     children: [
-        {
-          path: "home",
-          component: () => import("@/views/home.vue"),
-          meta: {
-            title: "用户首页",
-            icon: "ChatLineSquare",
-          },
+      {
+        path: "home",
+        component: () => import("@/views/home.vue"),
+        meta: {
+          title: "用户首页",
         },
+      },
       {
         path: "chat",
         component: () => import("@/views/chat.vue"),
         meta: {
           title: "AI咨询",
-          icon: "ChatLineSquare",
         },
       },
     ],
