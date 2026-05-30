@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import BackEndLayout from "@/components/BackendLayout.vue";
 import AuthLayout from "@/components/Authlayout.vue";
+import UserNavbar from "@/components/UserNavbar.vue";
 
 // 路由配置-嵌套路由
 const BackEndLayoutRoutes = [
@@ -60,17 +61,37 @@ const BackEndLayoutRoutes = [
     path: "/",
     component: () => import("@/views/index.vue"),
   },
+];
+
+const UserLayoutRoutes = [
   {
-    path: "/home",
-    component: () => import("@/views/home.vue"),
+    path: "/customer",
+    redirect: "/customer/home",
+    children: [
+        {
+          path: "home",
+          component: () => import("@/views/home.vue"),
+          meta: {
+            title: "用户首页",
+            icon: "ChatLineSquare",
+          },
+        },
+      {
+        path: "chat",
+        component: () => import("@/views/chat.vue"),
+        meta: {
+          title: "AI咨询",
+          icon: "ChatLineSquare",
+        },
+      },
+    ],
   },
-  
 ];
 
 // 路由实例
 const router = createRouter({
   history: createWebHistory(),
-  routes: BackEndLayoutRoutes,
+  routes: [...BackEndLayoutRoutes, ...UserLayoutRoutes],
 });
 
 // 路由前置守卫
