@@ -7,19 +7,37 @@
       </div>
     </div>
 
-    <div class="chat-frame-wrapper">
+    <div
+      v-loading="isFrameLoading"
+      element-loading-text="AI 咨询服务加载中..."
+      class="chat-frame-wrapper"
+    >
       <iframe
         class="chat-frame"
+        :class="{ 'is-loading': isFrameLoading }"
         :src="maxkbChatUrl"
+        title="MaxKB AI 咨询"
         frameborder="0"
         allow="microphone"
+        @load="handleFrameLoad"
       ></iframe>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
+defineOptions({
+  name: 'ChatView',
+})
+
 const maxkbChatUrl = 'https://maxkb.lonemonk.xyz/chat/2800d6d7256ba6a7'
+const isFrameLoading = ref(true)
+
+const handleFrameLoad = () => {
+  isFrameLoading.value = false
+}
 </script>
 
 <style scoped>
@@ -50,6 +68,7 @@ const maxkbChatUrl = 'https://maxkb.lonemonk.xyz/chat/2800d6d7256ba6a7'
 
 .chat-frame-wrapper {
   flex: 1;
+  position: relative;
   padding: 16px;
   min-height: 0;
 }
@@ -60,5 +79,10 @@ const maxkbChatUrl = 'https://maxkb.lonemonk.xyz/chat/2800d6d7256ba6a7'
   border: 0;
   border-radius: 8px;
   background: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.chat-frame.is-loading {
+  opacity: 0;
 }
 </style>

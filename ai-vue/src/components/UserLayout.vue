@@ -7,9 +7,14 @@
 
     <!-- 主体内容 - 切换 -->
     <el-main class="user-main">
-      <router-view v-slot="{ Component }">
+      <router-view v-slot="{ Component, route }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" />
+          <keep-alive :include="keepAliveNames">
+            <component
+              :is="Component"
+              :key="route.meta.keepAlive ? route.name : route.fullPath"
+            />
+          </keep-alive>
         </transition>
       </router-view>
     </el-main>
@@ -32,6 +37,8 @@
 
 <script setup>
 import UserNavbar from './UserNavbar.vue'
+
+const keepAliveNames = ['ChatView']
 </script>
 
 <style lang="scss" scoped>

@@ -78,9 +78,11 @@ const UserLayoutRoutes = [
       },
       {
         path: "chat",
+        name: "CustomerChat",
         component: () => import("@/views/chat.vue"),
         meta: {
           title: "AI咨询",
+          keepAlive: true,
         },
       },
     ],
